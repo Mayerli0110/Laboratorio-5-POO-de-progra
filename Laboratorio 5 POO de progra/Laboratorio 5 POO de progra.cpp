@@ -1,157 +1,101 @@
 #include <iostream>
-#include <vector>
-#include <limits> // Para limpiar el buffer en caso de error
-#include <sstream>
-
 using namespace std;
 
-class Producto {
+// Clase base Vehiculo
+class Vehiculo {
 private:
-    string nombre;
-    int codigo;
-    float precio;
-    int stock;
+    string marca;
+    string modelo;
+    double precio;
 
 public:
-    Producto(string nom, int cod, float prec, int stk)
-        : nombre(nom), codigo(cod), precio(prec), stock(stk) {
+    Vehiculo(string _marca, string _modelo, double _precio)
+        : marca(_marca), modelo(_modelo), precio(_precio) {
     }
 
-    void mostrar() {
-        cout << "Código: " << codigo << ", Producto: " << nombre
-            << ", Precio: Q" << precio << ", Stock: " << stock << endl;
+    virtual void mostrarInfo() {
+        cout << "Vehiculo: " << marca << " " << modelo << ", Precio: $" << precio << endl;
     }
 
-    int obtenerCodigo() { return codigo; }
-    int obtenerStock() { return stock; }
-
-    void actualizarStock(int cantidad) {
-        if (cantidad > stock) {
-            cout << "No hay suficiente stock disponible." << endl;
-        }
-        else {
-            stock -= cantidad;
-            cout << "Stock actualizado. Nuevo stock: " << stock << endl;
-        }
-    }
-
-    float obtenerValor() { return stock * precio; }
+    string getMarca() { return marca; }
+    string getModelo() { return modelo; }
+    double getPrecio() { return precio; }
 };
 
-void limpiarBuffer() {
-    cin.clear();
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-}
+// Clases derivadas
+class Automovil : public Vehiculo {
+private:
+    int numPuertas;
 
-void agregarProducto(vector<Producto>& inventario) {
+public:
+    Automovil(string _marca, string _modelo, double _precio, int _numPuertas)
+        : Vehiculo(_marca, _modelo, _precio), numPuertas(_numPuertas) {
+    }
+
+    void mostrarInfo() override {
+        Vehiculo::mostrarInfo();
+        cout << "Puertas: " << numPuertas << endl;
+    }
+};
+
+class Motocicleta : public Vehiculo {
+private:
+    int cilindrada;
+
+public:
+    Motocicleta(string _marca, string _modelo, double _precio, int _cilindrada)
+        : Vehiculo(_marca, _modelo, _precio), cilindrada(_cilindrada) {
+    }
+
+    void mostrarInfo() override {
+        Vehiculo::mostrarInfo();
+        cout << "Cilindrada: " << cilindrada << "cc" << endl;
+    }
+};
+
+class Camioneta : public Vehiculo {
+private:
+    double capacidadCarga;
+
+public:
+    Camioneta(string _marca, string _modelo, double _precio, double _capacidadCarga)
+        : Vehiculo(_marca, _modelo, _precio), capacidadCarga(_capacidadCarga) {
+    }
+
+    void mostrarInfo() override {
+        Vehiculo::mostrarInfo();
+        cout << "Capacidad de carga: " << capacidadCarga << " toneladas" << endl;
+    }
+};
+
+// Clase Cliente
+class Cliente {
+private:
     string nombre;
-    int codigo, stock;
-    float precio;
+    int edad;
 
-    cout << "Ingrese el nombre del producto: ";
-    cin.ignore(); // Evita problemas con getline
-    getline(cin, nombre);
+public:
+    Cliente(string _nombre, int _edad) : nombre(_nombre), edad(_edad) {}
 
-    cout << "Ingrese el código: ";
-    cin >> codigo;
-    if (cin.fail()) { limpiarBuffer(); return; } // Validación de entrada
-
-    cout << "Ingrese el precio: ";
-    cin >> precio;
-    if (cin.fail()) { limpiarBuffer(); return; }
-
-    cout << "Ingrese la cantidad en stock: ";
-    cin >> stock;
-    if (cin.fail()) { limpiarBuffer(); return; }
-
-    inventario.push_back(Producto(nombre, codigo, precio, stock));
-}
-
-void mostrarInventario(vector<Producto>& inventario) {
-    if (inventario.empty()) {
-        cout << "No hay productos en el inventario." << endl;
-        return;
+    void comprarVehiculo(Vehiculo& v) {
+        cout << "Cliente " << nombre << " ha comprado un " << v.getMarca() << " " << v.getModelo() << "." << endl;
     }
-    for (Producto& producto : inventario) {
-        producto.mostrar();
-    }
-}
-
-void buscarProducto(vector<Producto>& inventario) {
-    int codigo;
-    cout << "Ingrese el código del producto a buscar: ";
-    cin >> codigo;
-    if (cin.fail()) { limpiarBuffer(); return; }
-
-    for (Producto& producto : inventario) {
-        if (producto.obtenerCodigo() == codigo) {
-            cout << "Producto encontrado: ";
-            producto.mostrar();
-            return;
-        }
-    }
-    cout << "Producto no encontrado." << endl;
-}
-
-void actualizarStock(vector<Producto>& inventario) {
-    int codigo, cantidad;
-
-    cout << "Ingrese el código del producto a actualizar: ";
-    cin >> codigo;
-    if (cin.fail()) { limpiarBuffer(); return; }
-
-    for (Producto& producto : inventario) {
-        if (producto.obtenerCodigo() == codigo) {
-            cout << "Ingrese la cantidad a restar del stock: ";
-            cin >> cantidad;
-            if (cin.fail()) { limpiarBuffer(); return; }
-
-            producto.actualizarStock(cantidad);
-            return;
-        }
-    }
-    cout << "Producto no encontrado." << endl;
-}
-
-void calcularValorTotal(vector<Producto>& inventario) {
-    float total = 0;
-    for (Producto& producto : inventario) {
-        total += producto.obtenerValor();
-    }
-    cout << "Valor total del inventario: Q" << total << endl;
-}
+};
 
 int main() {
-    vector<Producto> inventario;
-    int opcion;
+    // Instanciación de objetos
+    Automovil auto1("Toyota", "Corolla", 25000, 4);
+    Motocicleta moto1("Yamaha", "R1", 18000, 1000);
+    Camioneta camioneta1("Ford", "Ranger", 30000, 1.5);
 
-    do {
-        cout << "\nSistema de Inventario\n";
-        cout << "1. Agregar producto\n";
-        cout << "2. Mostrar inventario\n";
-        cout << "3. Buscar producto por código\n";
-        cout << "4. Actualizar stock\n";
-        cout << "5. Calcular valor total del inventario\n";
-        cout << "6. Salir\n";
-        cout << "Seleccione una opción: ";
-        cin >> opcion;
+    // Mostrar información de los vehículos
+    auto1.mostrarInfo();
+    moto1.mostrarInfo();
+    camioneta1.mostrarInfo();
 
-        if (cin.fail()) { // Validar entrada inválida
-            limpiarBuffer();
-            cout << "Entrada inválida. Intente de nuevo.\n";
-            continue;
-        }
-
-        switch (opcion) {
-        case 1: agregarProducto(inventario); break;
-        case 2: mostrarInventario(inventario); break;
-        case 3: buscarProducto(inventario); break;
-        case 4: actualizarStock(inventario); break;
-        case 5: calcularValorTotal(inventario); break;
-        case 6: cout << "Saliendo del programa...\n"; break;
-        default: cout << "Opción no válida, intente de nuevo.\n";
-        }
-    } while (opcion != 6);
+    // Crear un cliente y realizar la compra de un vehículo
+    Cliente cliente1("Juan", 30);
+    cliente1.comprarVehiculo(auto1);
 
     return 0;
 }
